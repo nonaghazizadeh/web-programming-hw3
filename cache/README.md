@@ -127,3 +127,57 @@ all() {
         return all
 }
 ```
+## GRPC
+### proto file
+This is the file where we declare our Protocol Buffer Message and gRPC Service. We declare the syntax to use the proto3 version of the protocol buffer language which is the current latest version.
+1. We define our service as below. Then we define rpc methods inside our service defintion
+```
+service CacheService {
+    rpc GetKey(Key) returns (Value) {}
+    rpc SetKey(Node) returns (Cache) {}
+    rpc Clear(Empty) returns (Empty) {}
+}
+```
+
+2. We define the structure for the data we want to serialize in a proto file. In the other words our proto file contains protocol buffer message type definitions for all the request and response types used in our service methods. In the code below Repeated means that the field is a type of list. We also create an Empty Message for empty request or empty response for a method.
+```
+message Empty {}
+
+message Key {
+    string key = 1;
+}
+
+message Value {
+    string value = 1;
+}
+
+message Node {
+    string key = 1;
+    string value = 2;
+}
+
+message Cache {
+    repeated Node cache = 1;
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

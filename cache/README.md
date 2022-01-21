@@ -341,7 +341,7 @@ client.getKey(note, (error, value) => {
     }
 })
 ```
-4. In clear.js file we test our clear function as the code below. We import client.js file. Then we pass an empty object as first argument. After that we invoke clear method. Inside the completion callback, we just check if there is no error. Then we print the response from the server. 
+3. In clear.js file we test our clear function as the code below. We import client.js file. Then we pass an empty object as first argument. After that we invoke clear method. Inside the completion callback, we just check if there is no error. Then we print the response from the server. 
 ```
 import client from './client.js'
 

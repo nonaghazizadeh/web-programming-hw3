@@ -20,4 +20,16 @@ function create(req, res) {
     });
 };
 
-export default create;
+async function login(req, res) {
+    const { username, password } = req.body;
+    const user = await Users.findOne({
+        where: { username: username, password: password}
+    });
+    if (!user) {
+        res.status(404).send({message: 'Cannot find user'});
+        return;
+    };
+    res.send({token: user.token});
+};
+
+export { create, login };

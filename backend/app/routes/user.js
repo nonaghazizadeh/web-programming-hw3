@@ -1,5 +1,5 @@
 import express from 'express';
-import create from '../controllers/user.js';
+import { create, login } from '../controllers/user.js';
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ function set_user_router(app) {
     router.post('/register', create);
 
     // login uesr
-    router.post('/login', );
+    router.post('/login', login);
 
 
     app.use('/users', router);

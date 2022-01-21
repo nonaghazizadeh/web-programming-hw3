@@ -1,13 +1,14 @@
-const dbConfig = require('../config/db.js');
+import { DB, USER, PASSWORD, HOST, dialect as _dialect } from '../config/db.js';
+import Sequelize from 'sequelize';
+import create_note_model from './note.js';
 
-const Sequelize = require('sequelize');
 const sequelize = new Sequelize(
-    dbConfig.DB,
-    dbConfig.USER,
-    dbConfig.PASSWORD,
+    DB,
+    USER,
+    PASSWORD,
     {
-        host: dbConfig.HOST,
-        dialect: dbConfig.dialect,
+        host: HOST,
+        dialect: _dialect,
     }
 );
 
@@ -16,6 +17,6 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.notes = require('./note.js')(sequelize, Sequelize);
+db.notes = create_note_model(sequelize, Sequelize);
 
-module.exports = db;
+export default db;

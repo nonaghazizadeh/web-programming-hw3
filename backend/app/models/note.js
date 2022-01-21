@@ -1,4 +1,4 @@
-module.exports = (sequleize, Sequelize) => {
+function create_note_model(sequleize, Sequelize) {
     const Note = sequleize.define('note', {
         user_id: {
             type: Sequelize.INTEGER,
@@ -21,3 +21,5 @@ module.exports = (sequleize, Sequelize) => {
     });
     return Note;
 };
+
+export default create_note_model;

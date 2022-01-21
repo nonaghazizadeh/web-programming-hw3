@@ -130,7 +130,7 @@ all() {
 ## GRPC
 ### proto file
 This is the file where we declare our Protocol Buffer Message and gRPC Service. We declare the syntax to use the proto3 version of the protocol buffer language which is the current latest version.
-1. We define our service as below. Then we define rpc methods inside our service defintion
+1. We define our service as below. Then we define rpc methods inside our service defintion.
 ```
 service CacheService {
     rpc GetKey(Key) returns (Value) {}
@@ -185,7 +185,7 @@ const cache = new Cache()
 const mutex = new Mutex()
 ```
 3. We invoke the server addService method passing the CacheService service from the lru proto object, the second parameter accepts an object. It has 2 parameters, call and callback. The call is the request from the Client while the callback is a function we will invoke to return the response to the Client.
-    1. We add getKey method function handler inside our file as shown in the code below. First we get the key from the client, then with parse function that we implemented for converting, Then we get the value of given key with the function implemented in Cache in lru.js file. If the value is undefiend we notify pur client by returning error. If the key exists we return the value
+    1. We add getKey method function handler inside our file as shown in the code below. First we get the key from the client, then with parse function that we implemented for converting, Then we get the value of given key with the function implemented in Cache in lru.js file. If the value is undefiend we notify pur client by returning error. If the key exists we return the value.
     ```
     getKey: (_, callback) => {
         mutex.acquire()
@@ -206,7 +206,7 @@ const mutex = new Mutex()
             })
     },
     ```
-    2. We add setKey method function handler inside our file as shown in the code below. First we set key with the function implemented in Cache in lru.js file. Then we return our cache to the client
+    2. We add setKey method function handler inside our file as shown in the code below. First we set key with the function implemented in Cache in lru.js file. Then we return our cache to the client.
     ```
     setKey: (_, callback) => {
         mutex.acquire()
@@ -287,12 +287,72 @@ server.bindAsync(
     }
 );
 ```
+### client.js file(client)
+To call our gRPC Server method and see the response, we will create a gRPC client. We create a new file called client.js. Inside, we import the gRPC module, then load the lru.proto file and instantiate the Client using the CacheService object passing the localhost and the port of our gRPC server. We also pass insecure credentials for our development testing. At last we exports the client object in this module so it can be imported by other Client method we will implement.
+```
+import grpc from '@grpc/grpc-js'
+const PROTO_PATH = "./lru.proto";
+import protoLoader from '@grpc/proto-loader';
 
+import dotenv from 'dotenv';
+dotenv.config()
 
+const options = {
+    keepCase: true,
+    longs: String,
+};
+var packageDefinition = protoLoader.loadSync(PROTO_PATH,options);
+const CacheService = grpc.loadPackageDefinition(packageDefinition).CacheService;
 
+let port = process.env.PORT
+const client = new CacheService(`localhost:${port}`, grpc.credentials.createInsecure())
 
+export default client
+```
+For testing each function we have been implemented we made a file for each one.
+1. In set.js file we test our setKey function as the code below. We import our client.js file. Then we define a new note with key and value. After that we invoke setKey method passing an object. Inside the completion callback, we just check if there is no error. Then we print the created response note from the server.
+```
+import client from './client.js'
+let newNote = {
+    key: 5,
+    value: 'c'
+}
 
+client.setKey(newNote, (error, note) => {
+    if (!error) {
+       console.log('note added to cache! current cache is: ', note)
+    } else {
+       console.error(error)
+    }
+})
+```
+2. In get.js file we test our getKey function as the code below. We import our client.js file. Then we define our note key. After that we invoke getKey method passing an object. Inside the completion callback, we just check if ther is no error. Then we print the created response the value of given key.
+```
+import client from './client.js'
+let note = {
+    key: 5,
+}
 
+client.getKey(note, (error, value) => {
+    if (!error) {
+       console.log(value)
+    } else {
+       console.error(error)
+    }
+})
+```
+4. In clear.js file we test our clear function as the code below. We import client.js file. Then we pass an empty object as first argument. After that we invoke clear method. Inside the completion callback, we just check if there is no error. Then we print the response from the server. 
+```
+import client from './client.js'
+
+client.clear({},(error,note) => {
+    if (!error) {
+       console.log(note)
+    } else {
+       console.error(error)
+    }
+})
+```
 
 
 

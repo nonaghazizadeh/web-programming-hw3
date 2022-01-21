@@ -6,7 +6,7 @@ import {
 
 const router = express.Router();
 
-function set_router(app) {
+function set_note_router(app) {
 
     // create new note
     router.post('/new', create_note);
@@ -18,4 +18,4 @@ function set_router(app) {
     app.use('/notes', router);
 };
 
-export default set_router;
+export default set_note_router;

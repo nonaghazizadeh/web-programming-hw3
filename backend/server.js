@@ -3,7 +3,8 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import db from './app/models/index.js';
-import set_router from './app/routes/note.js';
+import set_note_router from './app/routes/note.js';
+import set_user_router from './app/routes/user.js'
 import bodyParser from "body-parser";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -17,7 +18,8 @@ app.use(bodyParser.json());
 // });
 db.sequelize.sync();
 
-set_router(app);
+set_note_router(app);
+set_user_router(app);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

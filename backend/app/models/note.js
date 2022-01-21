@@ -1,5 +1,5 @@
-function create_note_model(sequleize, Sequelize) {
-    const Note = sequleize.define('note', {
+function create_note_model(sequelize, Sequelize) {
+    const Note = sequelize.define('note', {
         user_id: {
             type: Sequelize.INTEGER,
             autoIncrement: false,

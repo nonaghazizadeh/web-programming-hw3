@@ -160,16 +160,133 @@ message Cache {
     repeated Node cache = 1;
 }
 ```
+### grpc.js file(server)
+In server side we should be sure about ThreadSafety so we use async-mutex. For more details about async-mutex you can visit [this page](https://www.npmjs.com/package/async-mutex) we get through our implementation for GRPC server side
 
+1. We import the grpc module, then we use the grpc load method passing the path of our lru.proto so it can be loaded by the grpc module. Then we instantiate grpc Server object.
+```
+import grpc from '@grpc/grpc-js';
+const PROTO_PATH = "./lru.proto";
+import protoLoader from '@grpc/proto-loader';
+const options = {
+    keepCase: true,
+    longs: String,
+};
+var packageDefinition = protoLoader.loadSync(PROTO_PATH, options);
+const cacheProto = grpc.loadPackageDefinition(packageDefinition);
+const server = new grpc.Server();
+```
+2. We import aysnc-mutex and our LRU.js and get an instance .
+```
+import {Mutex} from 'async-mutex';
+import Cache from './lru.js'
 
-
-
-
-
-
-
-
-
+const cache = new Cache()
+const mutex = new Mutex()
+```
+3. We invoke the server addService method passing the CacheService service from the lru proto object, the second parameter accepts an object. It has 2 parameters, call and callback. The call is the request from the Client while the callback is a function we will invoke to return the response to the Client.
+    1. We add getKey method function handler inside our file as shown in the code below. First we get the key from the client, then with parse function that we implemented for converting, Then we get the value of given key with the function implemented in Cache in lru.js file. If the value is undefiend we notify pur client by returning error. If the key exists we return the value
+    ```
+    getKey: (_, callback) => {
+        mutex.acquire()
+            .then(function (release) {
+                const key = parse(_.request.key)
+                const value = parse(cache.getKey(key))
+                if (value === undefined) {
+                    callback({
+                        code: 404,
+                        message: "key not found",
+                        status: grpc.status.INVALID_ARGUMENT
+                    })
+                } else
+                    callback(null, {
+                        value: value.value
+                    })
+                release()
+            })
+    },
+    ```
+    2. We add setKey method function handler inside our file as shown in the code below. First we set key with the function implemented in Cache in lru.js file. Then we return our cache to the client
+    ```
+    setKey: (_, callback) => {
+        mutex.acquire()
+            .then(function (release) {
+                const key = parse(_.request.key)
+                const value = parse(_.request.value)
+                cache.setKey(key, value)
+                callback(null, {
+                    cache: cache.all()
+                })
+                release()
+            })
+    },
+    ```
+    3. We add clear method function handler inside our file as shown in the code below. First we clear all keys and values with the function implemented in Cache in lru.js file. Then we return an empty object to client.
+    ```
+    clear: (_, callback) => {
+        mutex.acquire()
+            .then(function (release) {
+                cache.clear()
+                callback(null, {})
+                release()
+            })
+    }
+    ```
+The final server addService methods is shown below
+```
+server.addService(cacheProto.CacheService.service, {
+    getKey: (_, callback) => {
+        mutex.acquire()
+            .then(function (release) {
+                const key = parse(_.request.key)
+                const value = parse(cache.getKey(key))
+                if (value === undefined) {
+                    callback({
+                        code: 404,
+                        message: "key not found",
+                        status: grpc.status.INVALID_ARGUMENT
+                    })
+                } else
+                    callback(null, {
+                        value: value.value
+                    })
+                release()
+            })
+    },
+    setKey: (_, callback) => {
+        mutex.acquire()
+            .then(function (release) {
+                const key = parse(_.request.key)
+                const value = parse(_.request.value)
+                cache.setKey(key, value)
+                callback(null, {
+                    cache: cache.all()
+                })
+                release()
+            })
+    },
+    clear: (_, callback) => {
+        mutex.acquire()
+            .then(function (release) {
+                cache.clear()
+                callback(null, {})
+                release()
+            })
+    }
+})
+```
+4. After we instantiate grpc Server object, we bind it to our localhost with the port of 8080, and passing Server Credential insecure object for our current development testing. Finally we invoke the start method of the server to start our gRPC server.
+```
+let port = process.env.PORT
+server.bindAsync(
+    `localhost:${port}`,
+    grpc.ServerCredentials.createInsecure(),
+    (error, port) => {
+        console.log(`Server running at localhost:${port}`);
+        server.start();
+    }
+);
+```
 
 
 

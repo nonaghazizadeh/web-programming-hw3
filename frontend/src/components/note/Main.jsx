@@ -14,7 +14,7 @@ const Main = ({ activeNote, onUpdateNote, onDeleteNote, saveNote, loadActiveNote
 
   return (
     <div className="app-main-note-edit">
-      {loadActiveNote ? <Messaging className="content-loader" /> :
+      {loadActiveNote ? <Messaging className="content-loader" color="#214169"/> :
       <div>
         <div dir="rtl">
         <MdSaveAlt

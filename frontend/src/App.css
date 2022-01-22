@@ -6,11 +6,11 @@
 
 :root {
   --bg: #edf6f9;
-  --newNoteBg: #ffead2;
+  --newNoteBg: #a2bdc8;
   --noteBg: #ffddd2;
   --text: #000;
-  --save: #e29578;
-  --del: #e29578;
+  --save: #214169;
+  --del: #214169;
 }
 
 body,
@@ -41,6 +41,7 @@ body,
 
 .app-sidebar-header h1 {
   margin: 0;
+  color: #214169;
 }
 
 .app-sidebar-header .add-button {
@@ -124,11 +125,11 @@ textarea:hover {
 }
 
 .formContainer {
-  color: #d8d9de;
+  color: #a2bdc8;
   font-family: "Roboto", sans-serif;
   text-align: center;
   font-size: 28px;
-  background-color: #3f3f3f;
+  background-color: #214169;
   border-radius: 5px;
   box-shadow: 0px 0px 16px 0px rgba(50, 50, 50, 0.61);
   width: 500px;
@@ -154,20 +155,20 @@ textarea:hover {
 .saveForm {
   outline: none;
   border: none;
-  color: #d8d9de;
+  color: #a2bdc8;
   font-family: "Roboto Mono", monospace;
   font-size: 20px;
   width: 150px;
   height: 40px;
   background-color: transparent;
   margin-top: 20px;
-  border: 2px solid #ef5252;
+  border: 2px solid #a2bdc8;
   transition: all 0.3s ease;
 }
 
 .saveForm:hover {
-  background-color: #ef5252;
-  color: #3f3f3f;
+  background-color: #214169;
+  color: #214169;
 }
 
 .saveForm:active {
@@ -180,8 +181,8 @@ textarea:hover {
   display: inline-block;
   width: 50%;
   height: 100%;
-  background-color: #3f3f3f;
-  color: #d8d9de !important;
+  background-color: #214169;
+  color: #a2bdc8 !important;
 }
 
 .headerInActive {
@@ -190,13 +191,13 @@ textarea:hover {
   display: inline-block;
   width: 50%;
   height: 100%;
-  background-color: #ef5252;
-  color: #3f3f3f;
+  background-color: #a2bdc8;
+  color: #214169;
   transition: all 0.3s ease;
 }
 
 .headerInActive:hover {
-  background-color: #3f3f3f;
+  background-color: #214169;
 }
 
 .headerButton {
@@ -207,7 +208,7 @@ textarea:hover {
   background-color: transparent;
   transition: all 0.5s ease;
   padding-top: 10px;
-  color: #d8d9de;
+  color: #437183;
   z-index: 12;
 }
 
@@ -222,13 +223,9 @@ textarea:hover {
   border: none;
   background-color: transparent;
   height: 40px;
-  border-bottom: 2px solid #ef5252;
+  border-bottom: 2px solid #a2bdc8;
   color: #d8d9de;
   font-size: 18px;
-}
-
-.login::placeholder {
-  color: red;
 }
 
 .inputSection {
@@ -288,6 +285,7 @@ textarea:hover {
   left: 50%;
   top: 50%;
   padding: 10px;
+  color: "#214169" !important;
 }
 
 .error-message{

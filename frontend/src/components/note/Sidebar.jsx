@@ -6,11 +6,11 @@ const Sidebar = ({ notes, onAddNote, activeNote, setActiveNote,loading }) => {
     <div className="app-sidebar">
       <div className="app-sidebar-header">
         <h1>Notes</h1>
-        <IoIosAdd onClick={() => onAddNote()} className="add-button" size="2em"></IoIosAdd>
+        <IoIosAdd onClick={() => onAddNote()} className="add-button" size="2em" color="#214169"></IoIosAdd>
       </div>
       {loading 
       ? 
-      <Messaging className="notes-loader" />
+      <Messaging className="notes-loader" color="#214169"/>
       : 
       <div className="app-sidebar-notes">
         {notes.map(({ id, title }) => (

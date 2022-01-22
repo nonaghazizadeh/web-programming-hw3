@@ -7,7 +7,7 @@ async function create(req, res) {
     const token = req.headers.authorization;
     const user_auth = await authenticate_user(token);
     if (!user_auth.status) {
-        res.send({
+        res.status(401).send({
             message: user_auth.message
         });
         return;
@@ -15,7 +15,7 @@ async function create(req, res) {
 
     const { title, content } = req.body;
     if (!title || !content) {
-        res.send({
+        res.status(400).send({
             message: 'title or content is not porvided.'
         });
         return;
@@ -25,7 +25,10 @@ async function create(req, res) {
         title: title,
         content: content
     }).then(data => {
-        res.send(data);
+        res.send({
+            id: data.id,
+            title: data.title
+        });
     }).catch(err => {
         res.status(500).send({
             message: err.message || 'Error while creating note!'
@@ -36,7 +39,7 @@ async function create(req, res) {
 async function findOne(req, res) {
     const id = req.params.id;
     if (!id) {
-        res.send({
+        res.status(400).send({
             message: 'id is not porvided.'
         });
         return;
@@ -45,7 +48,7 @@ async function findOne(req, res) {
     const token = req.headers.authorization;
     const user_auth = await authenticate_user(token);
     if (!user_auth.status) {
-        res.send({
+        res.status(401).send({
             message: user_auth.message
         });
         return;
@@ -53,7 +56,7 @@ async function findOne(req, res) {
 
     const note_auth = await authenticate_note(user_auth.message, id);
     if (!note_auth.status) {
-        res.send({
+        res.status(note_auth.code).send({
            message: note_auth.message 
         });
     } else {
@@ -69,7 +72,7 @@ async function update(req, res) {
   const {title, content } = req.body;
   const id = req.params.id;
   if (!id || !title || !content) {
-    res.send({
+    res.status(400).send({
         message: 'id or title or content is not porvided.'
     });
     return;
@@ -78,7 +81,7 @@ async function update(req, res) {
   const token = req.headers.authorization;
   const user_auth = await authenticate_user(token);
   if (!user_auth.status) {
-      res.send({
+      res.status(401).send({
           message: user_auth.message
       });
       return;
@@ -86,7 +89,7 @@ async function update(req, res) {
 
   const note_auth = await authenticate_note(user_auth.message, id);
   if (!note_auth.status) {
-      res.send({
+      res.status(note_auth.code).send({
          message: note_auth.message 
       });
   } else {
@@ -99,13 +102,9 @@ async function update(req, res) {
     .then(num => {
         if (num == 1) {
             res.send({
-                message: 'note updated succesfully.'
+                message: 'Note updated successfully.'
             });
-        } else {
-            res.send({
-                message: 'couldnt update note.'
-            });
-        };
+        }
     })
     .catch(err => {
         res.status(500).send({
@@ -118,7 +117,7 @@ async function update(req, res) {
 async function deleteOne(req, res) {
     const id = req.params.id;
     if (!id) {
-        res.send({
+        res.satuts(400).send({
             message: 'id is not porvided.'
         });
         return;
@@ -127,7 +126,7 @@ async function deleteOne(req, res) {
     const token = req.headers.authorization;
     const user_auth = await authenticate_user(token);
     if (!user_auth.status) {
-        res.send({
+        res.status(401).send({
             message: user_auth.message
         });
         return;
@@ -135,7 +134,7 @@ async function deleteOne(req, res) {
 
     const note_auth = await authenticate_note(user_auth.message, id);
     if (!note_auth.status) {
-        res.send({
+        res.status(note_auth.code).send({
            message: note_auth.message 
         });
     } else {
@@ -145,11 +144,7 @@ async function deleteOne(req, res) {
         .then(num => {
             if (num == 1) {
                 res.send({
-                    message: "successfully deleted note with id: " + id
-                });
-            } else {
-                res.send({
-                    message: "couldnt delete note with id: " + id
+                    message: "Successfully deleted note with id: " + id
                 });
             };
         }).catch(err => {

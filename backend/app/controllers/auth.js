@@ -7,14 +7,14 @@ async function authenticate_user(token) {
     if (!token) {
         return {
             status: false,
-            message: 'token not provided.'
+            message: 'Token is not provided.'
         };
     };
     token = token.split(' ')[1];
     if (!token) {
         return {
             status: false,
-            message: 'provide token in order {Token ****}'
+            message: 'Provide token in order {Token ***}'
         };
     };
     
@@ -24,7 +24,7 @@ async function authenticate_user(token) {
     if (!user) {
         return {
             status: false,
-            message: 'fake token!'
+            message: 'Fake token!'
         };
     };
 
@@ -39,13 +39,15 @@ async function authenticate_note(username, note_id) {
     if (!note) {
         return {
             status: false,
-            message: 'note does not exist.'
+            code: 406,
+            message: 'Note does not exist.'
         };
     };
     if (note.username != username) {
         return {
             status: false,
-            message: 'you do not have premission to access this note.'
+            code: 403,
+            message: 'Do not have premission to access this note.'
         };
     };
 

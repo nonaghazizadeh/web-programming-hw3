@@ -12,11 +12,14 @@ function create(req, res) {
         token: token
     })
     .then(data => {
-        res.send(data);
-    }).catch(err => {
-        res.status(500).send({
-            message: err.message || 'Error while creating note!'
+        res.send({
+            token: data.token
         });
+    }).catch(err => {
+        res.status(406).send({
+            message: "Username already exists."
+        });
+        console.log(err.message);
     });
 };
 
@@ -26,7 +29,7 @@ async function login(req, res) {
         where: { username: username, password: password}
     });
     if (!user) {
-        res.status(404).send({message: 'Cannot find user'});
+        res.status(404).send({message: 'Username or password is incorrect.'});
         return;
     };
     res.send({token: user.token});

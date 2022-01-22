@@ -16,7 +16,7 @@ async function create(req, res) {
     const { title, content } = req.body;
     if (!title || !content) {
         res.send({
-            message: 'title and content are not porvided.'
+            message: 'title or content is not porvided.'
         });
         return;
     };
@@ -34,7 +34,14 @@ async function create(req, res) {
 };
 
 async function findOne(req, res) {
-    const note_id = req.params.note_id;
+    const id = req.params.id;
+    if (!id) {
+        res.send({
+            message: 'id is not porvided.'
+        });
+        return;
+      };
+
     const token = req.headers.authorization;
     const user_auth = await authenticate_user(token);
     if (!user_auth.status) {
@@ -44,7 +51,7 @@ async function findOne(req, res) {
         return;
     };
 
-    const note_auth = await authenticate_note(user_auth.message, note_id);
+    const note_auth = await authenticate_note(user_auth.message, id);
     if (!note_auth.status) {
         res.send({
            message: note_auth.message 
@@ -58,4 +65,99 @@ async function findOne(req, res) {
     };
 };
 
-export { create, findOne };
+async function update(req, res) {
+  const {title, content } = req.body;
+  const id = req.params.id;
+  if (!id || !title || !content) {
+    res.send({
+        message: 'id or title or content is not porvided.'
+    });
+    return;
+  };
+  
+  const token = req.headers.authorization;
+  const user_auth = await authenticate_user(token);
+  if (!user_auth.status) {
+      res.send({
+          message: user_auth.message
+      });
+      return;
+  };
+
+  const note_auth = await authenticate_note(user_auth.message, id);
+  if (!note_auth.status) {
+      res.send({
+         message: note_auth.message 
+      });
+  } else {
+    Notes.update({
+        title: title,
+        content: content
+    }, {
+        where: {id: id}
+    })
+    .then(num => {
+        if (num == 1) {
+            res.send({
+                message: 'note updated succesfully.'
+            });
+        } else {
+            res.send({
+                message: 'couldnt update note.'
+            });
+        };
+    })
+    .catch(err => {
+        res.status(500).send({
+            message: "Error updating note with id: " + id
+          });
+    });
+  };
+};
+
+async function deleteOne(req, res) {
+    const id = req.params.id;
+    if (!id) {
+        res.send({
+            message: 'id is not porvided.'
+        });
+        return;
+      };
+
+    const token = req.headers.authorization;
+    const user_auth = await authenticate_user(token);
+    if (!user_auth.status) {
+        res.send({
+            message: user_auth.message
+        });
+        return;
+    };
+
+    const note_auth = await authenticate_note(user_auth.message, id);
+    if (!note_auth.status) {
+        res.send({
+           message: note_auth.message 
+        });
+    } else {
+        Notes.destroy({
+            where: {id: id}
+        })
+        .then(num => {
+            if (num == 1) {
+                res.send({
+                    message: "successfully deleted note with id: " + id
+                });
+            } else {
+                res.send({
+                    message: "couldnt delete note with id: " + id
+                });
+            };
+        }).catch(err => {
+            res.status(500).send({
+                message: "Error deleting note with id: " + id
+              });
+        });
+    };
+};
+
+export { create, findOne, update, deleteOne };

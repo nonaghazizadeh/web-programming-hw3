@@ -1,18 +1,21 @@
 import express from 'express';
-import {
-    create as create_note,
-    findOne as get_note
-} from '../controllers/note.js';
+import { create, findOne, update, deleteOne } from '../controllers/note.js';
 
 const router = express.Router();
 
 function set_note_router(app) {
 
     // create new note
-    router.post('/new', create_note);
+    router.post('/new', create);
 
-    // get single note by id
-    router.get('/:note_id', get_note);
+    // get note by id
+    router.get('/:id', findOne);
+
+    // update note by id
+    router.put('/:id', update);
+
+    // delete note by id
+    router.delete('/:id', deleteOne);
 
 
     app.use('/notes', router);

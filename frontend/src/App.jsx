@@ -14,14 +14,23 @@ function App() {
   const [loadActiveNote, setLoadActiveNote] = useState(false)
   const [clickedNote, setClickedNote] = useState(false)
   const [user, setUser] = useState({ newUser: true });
+  const [loggedIn, setLoggedIn] = useState(localStorage.getItem('token'));
+  const [userNameSignUp, setUserNameSignUp] = useState('');
+  const [passwordSignUp, setPasswordSignUp] = useState('');
+  const [userNameSignIn, setUserNameSignIn] = useState('');
+  const [passwordSignIn, setPasswordSignIn] = useState('');
+  const [errorMessageSignUp, setErrorMessageSignUp] = useState('');
+  const [errorMessageSignIn, setErrorMessageSignIn] = useState('');
 
-  var token = '3d23efb8065e433b4df4341f10d39cf6'
   useEffect(() => {
-    axios.get('http://192.168.1.239:8080/notes/', { headers: {"Authorization" : `Token ${token}`}})
+    if (localStorage.getItem('token')) {
+      axios.get('http://192.168.1.239:8080/notes/', { headers: {"Authorization" : `Token ${localStorage.getItem('token')}`}})
       .then((res) => {
         setNotes(res.data)
         setLoading(false)}
       )
+    }
+    
     }, []);
 
   const onAddNote = () => {
@@ -29,35 +38,41 @@ function App() {
       title: "Untitled Note",
       content: ""
     }
-    axios.post('http://192.168.1.239:8080/notes/new',newNote,{ headers: {"Authorization" : `Token ${token}`}})
+    axios.post('http://192.168.1.239:8080/notes/new',newNote,{ headers: {"Authorization" : `Token ${localStorage.getItem('token')}`}})
       .then((res) =>{
         setNotes([res.data, ...notes]);
         setActiveNote(res.data.id);
         setClickedNoteActive(res.data.id)
+    }).catch((err) => {
+      console.error(err)
     })
   };
 
   const onDeleteNote = (noteId) => {
-    axios.delete(`http://192.168.1.239:8080/notes/${noteId}`, { headers: {"Authorization" : `Token ${token}`} })
+    axios.delete(`http://192.168.1.239:8080/notes/${noteId}`, { headers: {"Authorization" : `Token ${localStorage.getItem('token')}`} })
       .then((res) => {
         console.log(res.data)
         setNotes(notes.filter(({ id }) => id !== noteId));
         setClickedNote(false)
+    }).catch((err) => {
+      console.error(err)
     })
   };
 
   const saveNote = (noteId, title, content) => {
     const body = {title: title, content: content };
-    axios.put(`http://192.168.1.239:8080/notes/${noteId}`, body, { headers: {"Authorization" : `Token ${token}`}})
+    axios.put(`http://192.168.1.239:8080/notes/${noteId}`, body, { headers: {"Authorization" : `Token ${localStorage.getItem('token')}`}})
       .then((res) => {
         console.log(res.data)
+    }).catch((err) => {
+      console.error(err)
     })
   };
 
   const setClickedNoteActive = (id) => {
     setLoadActiveNote(false)
     setActiveNote(id)
-    axios.get(`http://192.168.1.239:8080/notes/${id}`, { headers: {"Authorization" : `Token ${token}`}})
+    axios.get(`http://192.168.1.239:8080/notes/${id}`, { headers: {"Authorization" : `Token ${localStorage.getItem('token')}`}})
       .then((res) => {
         try{
           setClickedNote(res.data)
@@ -66,8 +81,11 @@ function App() {
           console.log(res.data)
           setLoadActiveNote(false);
         }
+    }).catch((err) => {
+      console.error(err)
     }) 
   }
+
   const onUpdateNote = (updatedNote) => {
     const updatedNotesArr = notes.map((note) => {
       if (note.id === updatedNote.id) {
@@ -85,11 +103,56 @@ function App() {
       setUser(true);
     }
   };
-  const [loggedIn, setLoggedIn] = useState(false);
-  const changeStatus =() =>{
-    setLoggedIn(true)
-  }
-  
+
+  const changeStatus =(user) =>{
+    if (user) {
+      const data = { username: userNameSignUp, password: passwordSignUp}
+      axios.post('http://192.168.1.239:8080/users/register',data)
+        .then((res) => {
+          try{
+            console.log(res.data.token)
+            localStorage.setItem('token', res.data.token )
+            setLoggedIn(true)
+          }
+          finally{
+            axios.get('http://192.168.1.239:8080/notes/', { headers: {"Authorization" : `Token ${localStorage.getItem('token')}`}})
+            .then((res) => {
+              console.log(res.data)
+              setNotes(res.data)
+              setLoading(false)
+            })
+          }
+      }).catch((err) => {
+        setErrorMessageSignUp(err.response.data.message)
+        setTimeout(() => {
+          setErrorMessageSignUp('')
+        }, 3000)
+      })
+    }else {
+      const data = { username: userNameSignIn, password: passwordSignIn}
+      axios.post('http://192.168.1.239:8080/users/login', data)
+        .then((res) => {
+          try{
+            console.log(res.data.token)
+            localStorage.setItem('token', res.data.token )
+            setLoggedIn(true)
+          }
+          finally{
+            axios.get('http://192.168.1.239:8080/notes/', { headers: {"Authorization" : `Token ${localStorage.getItem('token')}`}})
+            .then((res) => {
+              setNotes(res.data)
+              setLoading(false)
+            })
+          }
+        }).catch((err) => {
+          setErrorMessageSignIn(err.response.data.message)
+          setTimeout(() => {
+            setErrorMessageSignIn('')
+          }, 3000)
+        })
+      }
+    }
+
   if (!loggedIn)
     return (
       <div className="formContainer">
@@ -107,12 +170,31 @@ function App() {
             <button className="headerButton"> Sign In </button>
           </div>
         </div>
-        <div className="formBody">{user ? <SignUp /> : <SignIn />}</div>
+        <div className="formBody">
+          {user 
+          ? 
+          <SignUp 
+            userNameSignUp={userNameSignUp}
+            passwordSignUp={passwordSignUp}
+            setUserNameSignUp={setUserNameSignUp}
+            setPasswordSignUp={setPasswordSignUp}
+          /> 
+          : 
+          <SignIn
+            userNameSignIn={userNameSignIn}
+            passwordSignIn={passwordSignIn}
+            setUserNameSignIn={setUserNameSignIn}
+            setPasswordSignIn={setPasswordSignIn}
+          />
+          }
+        </div>
+        <div className="error-message">{ user ? errorMessageSignUp : errorMessageSignIn}</div>
         <div className="formFooter">
-          <button onClick={()=>changeStatus()} className="saveForm"> {user ? "Submit" : "Login"} </button>
+          <button onClick={()=>changeStatus(user)} className="saveForm"> {user ? "Submit" : "Login"} </button>
         </div>
       </div>
     );
+
   return (
     <div className="App">
       <Sidebar

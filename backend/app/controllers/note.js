@@ -1,4 +1,5 @@
 import db from '../models/index.js';
+import authenticate from './auth.js';
 
 const Notes = db.notes;
 
@@ -10,20 +11,30 @@ function create(req, res) {
             message: err.message || 'Error while creating note!'
         });
     });
-}
+};
 
-function findOne(req, res) {
-    const note_id = req.params.note_id
-    console.log(note_id)
-    Notes.findByPk(note_id).then(data => {
-        if (data) {
-            res.send(data);
-        } else {
-            res.status(404).send({message: 'Cannot find note with id=' + note_id});
-        }
-    }).catch(err => {
-        res.status(500).send({message: 'Error retrieving note with id=' + note_id});
+async function findOne(req, res) {
+    const title = req.params.title;
+    let token = req.headers.authorization;
+    if (!token) {
+        res.status(404).send({
+            message: 'token not provided.'
+        });
+        return;
+    };
+    token = token.split(' ')[1];
+    const auth = await authenticate(token, title);
+    if (!auth.status) {
+        res.send({
+            message: auth.message
+        });
+        return;
+    };
+
+    const note = await Notes.findOne({where: {title: auth.title, username: auth.username}});
+    res.send({
+        content: note.content
     });
-}
+};
 
 export { create, findOne };

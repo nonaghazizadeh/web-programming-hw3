@@ -1,5 +1,6 @@
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { MdSaveAlt } from "react-icons/md";
+import Messaging from "react-cssfx-loading/lib/Messaging";
 
 const Main = ({ activeNote, onUpdateNote, onDeleteNote, saveNote, loadActiveNote }) => {
   const onEditField = (field, value) => {
@@ -13,7 +14,7 @@ const Main = ({ activeNote, onUpdateNote, onDeleteNote, saveNote, loadActiveNote
 
   return (
     <div className="app-main-note-edit">
-      {loadActiveNote ? <div>loading</div> :
+      {loadActiveNote ? <Messaging className="content-loader" /> :
       <div>
         <div dir="rtl">
         <MdSaveAlt

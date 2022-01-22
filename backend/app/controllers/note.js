@@ -1,10 +1,30 @@
 import db from '../models/index.js';
-import authenticate from './auth.js';
+import { authenticate_user, authenticate_note } from './auth.js';
 
 const Notes = db.notes;
 
-function create(req, res) {
-    Notes.create(req.body).then(data => {
+async function create(req, res) {
+    const token = req.headers.authorization;
+    const user_auth = await authenticate_user(token);
+    if (!user_auth.status) {
+        res.send({
+            message: user_auth.message
+        });
+        return;
+    };
+
+    const { title, content } = req.body;
+    if (!title || !content) {
+        res.send({
+            message: 'title and content are not porvided.'
+        });
+        return;
+    };
+    Notes.create({
+        username: user_auth.message,
+        title: title,
+        content: content
+    }).then(data => {
         res.send(data);
     }).catch(err => {
         res.status(500).send({
@@ -14,27 +34,28 @@ function create(req, res) {
 };
 
 async function findOne(req, res) {
-    const title = req.params.title;
-    let token = req.headers.authorization;
-    if (!token) {
-        res.status(404).send({
-            message: 'token not provided.'
-        });
-        return;
-    };
-    token = token.split(' ')[1];
-    const auth = await authenticate(token, title);
-    if (!auth.status) {
+    const note_id = req.params.note_id;
+    const token = req.headers.authorization;
+    const user_auth = await authenticate_user(token);
+    if (!user_auth.status) {
         res.send({
-            message: auth.message
+            message: user_auth.message
         });
         return;
     };
 
-    const note = await Notes.findOne({where: {title: auth.title, username: auth.username}});
-    res.send({
-        content: note.content
-    });
+    const note_auth = await authenticate_note(user_auth.message, note_id);
+    if (!note_auth.status) {
+        res.send({
+           message: note_auth.message 
+        });
+    } else {
+        res.send({
+            id: note_auth.id,
+            title: note_auth.title,
+            content: note_auth.content
+        });
+    };
 };
 
 export { create, findOne };

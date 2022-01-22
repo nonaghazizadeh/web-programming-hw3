@@ -12,7 +12,7 @@ function set_note_router(app) {
     router.post('/new', create_note);
 
     // get single note by id
-    router.get('/:title', get_note);
+    router.get('/:note_id', get_note);
 
 
     app.use('/notes', router);

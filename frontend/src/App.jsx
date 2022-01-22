@@ -78,10 +78,13 @@ function App() {
       setUser(true);
     }
   };
-
-  var isLoggedIn = true;
+  const [loggedIn, setLoggedIn] = useState(false);
+  const changeStatus =() =>{
+    setLoggedIn(true)
+  }
   
-  if (!isLoggedIn)
+  
+  if (!loggedIn)
     return (
       <div className="formContainer">
         <div className="formHeader">
@@ -100,7 +103,7 @@ function App() {
         </div>
         <div className="formBody">{user ? <SignUp /> : <SignIn />}</div>
         <div className="formFooter">
-          <button className="saveForm"> {user ? "Submit" : "Login"} </button>
+          <button onClick={()=>changeStatus()} className="saveForm"> {user ? "Submit" : "Login"} </button>
         </div>
       </div>
     );

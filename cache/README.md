@@ -185,7 +185,7 @@ const cache = new Cache()
 const mutex = new Mutex()
 ```
 3. We invoke the server addService method passing the CacheService service from the lru proto object, the second parameter accepts an object. It has 2 parameters, call and callback. The call is the request from the Client while the callback is a function we will invoke to return the response to the Client.
-    1. We add getKey method function handler inside our file as shown in the code below. First we get the key from the client, then with parse function that we implemented for converting, Then we get the value of given key with the function implemented in Cache in lru.js file. If the value is undefiend we notify pur client by returning error. If the key exists we return the value.
+    1. We add getKey method function handler inside our file as shown in the code below. First we get the key from the client, then with parse function that we implemented for converting, Then we get the value of given key with the function implemented in Cache in lru.js file. If the value is undefiend we notify our client by returning error. If the key exists we return the value.
     ```
     getKey: (_, callback) => {
         mutex.acquire()
@@ -206,19 +206,32 @@ const mutex = new Mutex()
             })
     },
     ```
-    2. We add setKey method function handler inside our file as shown in the code below. First we set key with the function implemented in Cache in lru.js file. Then we return our cache to the client.
+    2. We add setKey method function handler inside our file as shown in the code below. First we set key with the function implemented in Cache in lru.js file. Then we return our cache to the client. If the key is in our cache we notify our client.
     ```
     setKey: (_, callback) => {
-        mutex.acquire()
-            .then(function (release) {
-                const key = parse(_.request.key)
-                const value = parse(_.request.value)
+    mutex.acquire()
+        .then(function (release) {
+            const key = parse(_.request.key)
+            const value = parse(_.request.value)
+            const keys = []
+            const allCache = cache.all()
+            for (let i = 0 ; i<allCache.length; i++){
+                keys.push(allCache[i].key)
+            }
+            if(keys.includes(key)){
+                callback({
+                    code: 406,
+                    message: "key is used",
+                    status: grpc.status.INVALID_ARGUMENT
+                })
+            }
+            else
                 cache.setKey(key, value)
                 callback(null, {
                     cache: cache.all()
                 })
                 release()
-            })
+        })
     },
     ```
     3. We add clear method function handler inside our file as shown in the code below. First we clear all keys and values with the function implemented in Cache in lru.js file. Then we return an empty object to client.
@@ -258,11 +271,24 @@ server.addService(cacheProto.CacheService.service, {
             .then(function (release) {
                 const key = parse(_.request.key)
                 const value = parse(_.request.value)
-                cache.setKey(key, value)
-                callback(null, {
-                    cache: cache.all()
-                })
-                release()
+                const keys = []
+                const allCache = cache.all()
+                for (let i = 0 ; i<allCache.length; i++){
+                    keys.push(allCache[i].key)
+                }
+                if(keys.includes(key)){
+                    callback({
+                        code: 406,
+                        message: "key is used",
+                        status: grpc.status.INVALID_ARGUMENT
+                    })
+                }
+                else
+                    cache.setKey(key, value)
+                    callback(null, {
+                        cache: cache.all()
+                    })
+                    release()
             })
     },
     clear: (_, callback) => {

@@ -1,4 +1,6 @@
 import { IoIosAdd } from "react-icons/io";
+import Messaging from "react-cssfx-loading/lib/Messaging";
+
 const Sidebar = ({ notes, onAddNote, activeNote, setActiveNote,loading }) => {
   return (
     <div className="app-sidebar">
@@ -8,7 +10,7 @@ const Sidebar = ({ notes, onAddNote, activeNote, setActiveNote,loading }) => {
       </div>
       {loading 
       ? 
-      <div>loading</div> 
+      <Messaging className="notes-loader" />
       : 
       <div className="app-sidebar-notes">
         {notes.map(({ id, title }) => (

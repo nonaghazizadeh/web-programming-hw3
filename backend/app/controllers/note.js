@@ -1,5 +1,6 @@
 import db from '../models/index.js';
 import { authenticate_user, authenticate_note } from './auth.js';
+import cache_cli from '../config/cache-cli.js';
 
 const Notes = db.notes;
 
@@ -14,7 +15,7 @@ async function create(req, res) {
     };
 
     const { title, content } = req.body;
-    if (!title || !content) {
+    if (title === undefined || content === undefined) {
         res.status(400).send({
             message: 'title or content is not porvided.'
         });
@@ -37,6 +38,7 @@ async function create(req, res) {
 };
 
 async function findOne(req, res) {
+    // validate input
     const id = req.params.id;
     if (!id) {
         res.status(400).send({
@@ -45,6 +47,7 @@ async function findOne(req, res) {
         return;
       };
 
+    // check token authentication
     const token = req.headers.authorization;
     const user_auth = await authenticate_user(token);
     if (!user_auth.status) {
@@ -54,24 +57,53 @@ async function findOne(req, res) {
         return;
     };
 
-    const note_auth = await authenticate_note(user_auth.message, id);
-    if (!note_auth.status) {
-        res.status(note_auth.code).send({
-           message: note_auth.message 
-        });
-    } else {
-        res.send({
-            id: note_auth.id,
-            title: note_auth.title,
-            content: note_auth.content
-        });
-    };
+    // get data from catch if exists
+    cache_cli.getKey({
+        key: id,
+    }, async (error, value) =>{
+        if (!error) {
+            console.log('get key from cache');
+            const title = value.value.split(':')[0];
+            const content = value.value.split(':')[1];
+            res.send({
+                id: id,
+                title: title,
+                content: content
+            });
+        } else {
+            console.log('get from database');
+            const note_auth = await authenticate_note(user_auth.message, id);
+            if (!note_auth.status) {
+                res.status(note_auth.code).send({
+                   message: note_auth.message 
+                });
+            } else {
+                // set data in cache
+                cache_cli.setKey({
+                    key: note_auth.id,
+                    value: note_auth.title + ':' + note_auth.content
+                }, (error, value) => {
+                    if (!error) {
+                        console.error('note added to cache! current cache is: ', value);
+                     } else {
+                        console.error(error);
+                     };
+                });
+        
+                res.send({
+                    id: note_auth.id,
+                    title: note_auth.title,
+                    content: note_auth.content
+                });
+            };
+        };
+    });
 };
 
 async function update(req, res) {
   const {title, content } = req.body;
   const id = req.params.id;
-  if (!id || !title || !content) {
+  if (!id || title === undefined || content === undefined) {
     res.status(400).send({
         message: 'id or title or content is not porvided.'
     });
@@ -104,6 +136,13 @@ async function update(req, res) {
             res.send({
                 message: 'Note updated successfully.'
             });
+            cache_cli.clear({},(error,note) => {
+                if (!error) {
+                   console.log('Cleared cache.')
+                } else {
+                   console.error(error)
+                };
+            })
         }
     })
     .catch(err => {

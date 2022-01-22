@@ -6,11 +6,17 @@ import db from './app/models/index.js';
 import set_note_router from './app/routes/note.js';
 import set_user_router from './app/routes/user.js'
 import bodyParser from "body-parser";
+import cors from 'cors';
+
+var corsOptions = {
+    origin: "http://localhost:3000"
+  };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({path: resolve(__dirname, '../.env')});
 
 const app = experss();
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // db.sequelize.sync({ force: true }).then(() => {

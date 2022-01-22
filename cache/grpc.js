@@ -1,6 +1,13 @@
 import grpc from '@grpc/grpc-js';
 const PROTO_PATH = "./lru.proto";
 import protoLoader from '@grpc/proto-loader';
+import dotenv from 'dotenv';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({path: resolve(__dirname, '../.env')});
+
 const options = {
     keepCase: true,
     longs: String,
@@ -71,7 +78,7 @@ server.addService(cacheProto.CacheService.service, {
     }
 })
 
-let port = process.env.PORT
+let port = process.env.CACHE_PORT || 8081
 server.bindAsync(
     `localhost:${port}`,
     grpc.ServerCredentials.createInsecure(),

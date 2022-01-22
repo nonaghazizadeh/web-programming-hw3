@@ -1,5 +1,5 @@
 import express from 'express';
-import { create, findOne, update, deleteOne } from '../controllers/note.js';
+import { create, findOne, update, deleteOne, findAll } from '../controllers/note.js';
 
 const router = express.Router();
 
@@ -16,6 +16,9 @@ function set_note_router(app) {
 
     // delete note by id
     router.delete('/:id', deleteOne);
+
+    // get all notes by user token
+    router.get('/', findAll);
 
 
     app.use('/notes', router);

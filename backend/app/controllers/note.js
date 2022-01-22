@@ -160,4 +160,28 @@ async function deleteOne(req, res) {
     };
 };
 
-export { create, findOne, update, deleteOne };
+async function findAll(req, res) {
+    const token = req.headers.authorization;
+    const user_auth = await authenticate_user(token);
+    if (!user_auth.status) {
+        res.send({
+            message: user_auth.message
+        });
+        return;
+    };
+
+    Notes.findAll({
+        attributes: ['id', 'title'],
+        where: {username: user_auth.message}
+    })
+    .then(data => {
+        res.send(data);
+    })
+    .catch(err => {
+        res.status(500).send({
+            message: "Error while getting all notes!"
+          });
+    });
+};
+
+export { create, findOne, update, deleteOne, findAll };

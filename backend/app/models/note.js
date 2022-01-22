@@ -1,17 +1,12 @@
 function create_note_model(sequelize, Sequelize) {
     const Note = sequelize.define('note', {
-        user_id: {
-            type: Sequelize.INTEGER,
-            autoIncrement: false,
-            primaryKey: true
-        },
-        note_id: {
-            type: Sequelize.INTEGER,
-            autoIncrement: false,
+        username: {
+            type: Sequelize.STRING,
             primaryKey: true
         },
         title: {
-            type: Sequelize.STRING
+            type: Sequelize.STRING,
+            primaryKey: true
         },
         content: {
             type: Sequelize.TEXT

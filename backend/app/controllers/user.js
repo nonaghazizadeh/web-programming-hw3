@@ -5,6 +5,13 @@ const Users = db.users;
 
 function create(req, res) {
     const { username, password } = req.body;
+    if (!username || !password) {
+        res.status(400).send({
+            message: 'username or password is not porvided.'
+        });
+        return;
+      };
+
     var token = crypto.randomBytes(16).toString('hex');
     Users.create({
         username: username,
@@ -25,6 +32,12 @@ function create(req, res) {
 
 async function login(req, res) {
     const { username, password } = req.body;
+    if (!username || !password) {
+        res.status(400).send({
+            message: 'username or password is not porvided.'
+        });
+        return;
+      };
     const user = await Users.findOne({
         where: { username: username, password: password}
     });

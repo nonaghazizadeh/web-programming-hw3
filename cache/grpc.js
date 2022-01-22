@@ -58,7 +58,7 @@ server.addService(cacheProto.CacheService.service, {
     }
 })
 
-let port = process.env.PORT
+let port = process.env.CACHE_PORT || 8081;
 server.bindAsync(
     `localhost:${port}`,
     grpc.ServerCredentials.createInsecure(),

@@ -3,33 +3,58 @@ import db from '../models/index.js';
 const Users = db.users;
 const Notes = db.notes;
 
-async function authenticate(token, title) {
-    let ans = {
-        status: false,
-        message: ''
-    }
-
+async function authenticate_user(token) {
+    if (!token) {
+        return {
+            status: false,
+            message: 'token not provided.'
+        };
+    };
+    token = token.split(' ')[1];
+    if (!token) {
+        return {
+            status: false,
+            message: 'provide token in order {Token ****}'
+        };
+    };
+    
     const user = await Users.findOne({where: {
         token: token
     }});
     if (!user) {
-        ans.message = 'fake token!';
-        return ans;
+        return {
+            status: false,
+            message: 'fake token!'
+        };
     };
 
-    const note = await Notes.findOne({where: {
-        title: title,
-        username: user.username
-    }});
-    if (!note) {
-        ans.message = 'note does not exist';
-        return ans;
-    };
-
-    ans.status = true;
-    ans.title = title;
-    ans.username = user.username;
-    return ans;
+    return {
+        status: true,
+        message: user.username
+    }
 };
 
-export default authenticate;
+async function authenticate_note(username, note_id) {
+    const note = await Notes.findByPk(note_id);
+    if (!note) {
+        return {
+            status: false,
+            message: 'note does not exist.'
+        };
+    };
+    if (note.username != username) {
+        return {
+            status: false,
+            message: 'you do not have premission to access this note.'
+        };
+    };
+
+    return {
+        status: true,
+        id: note.id,
+        title: note.title,
+        content: note.content
+    };
+};
+
+export { authenticate_note, authenticate_user };

@@ -13,7 +13,8 @@ function create_user_model(sequelize, Sequelize) {
             type: Sequelize.STRING
         },
         token: {
-            type: Sequelize.STRING
+            type: Sequelize.STRING,
+            unique: true
         }
     }, {
         timestamps: false

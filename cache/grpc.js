@@ -41,11 +41,24 @@ server.addService(cacheProto.CacheService.service, {
             .then(function (release) {
                 const key = parse(_.request.key)
                 const value = parse(_.request.value)
-                cache.setKey(key, value)
-                callback(null, {
-                    cache: cache.all()
-                })
-                release()
+                const keys = []
+                const allCache = cache.all()
+                for (let i = 0 ; i<allCache.length; i++){
+                    keys.push(allCache[i].key)
+                }
+                if(keys.includes(key)){
+                    callback({
+                        code: 406,
+                        message: "key is used",
+                        status: grpc.status.INVALID_ARGUMENT
+                    })
+                }
+                else
+                    cache.setKey(key, value)
+                    callback(null, {
+                        cache: cache.all()
+                    })
+                    release()
             })
     },
     clear: (_, callback) => {
@@ -58,7 +71,7 @@ server.addService(cacheProto.CacheService.service, {
     }
 })
 
-let port = process.env.CACHE_PORT || 8081;
+let port = process.env.PORT
 server.bindAsync(
     `localhost:${port}`,
     grpc.ServerCredentials.createInsecure(),

@@ -18,7 +18,7 @@ const Main = ({ activeNote, onUpdateNote, onDeleteNote, saveNote, loadActiveNote
       <div>
         <div dir="rtl">
         <MdSaveAlt
-          onClick={() => saveNote(activeNote.id, activeNote.title, activeNote.body)}
+          onClick={() => saveNote(activeNote.id, activeNote.title, activeNote.content)}
           className="save-icon"
           size="1.5em"
         />
@@ -41,10 +41,10 @@ const Main = ({ activeNote, onUpdateNote, onDeleteNote, saveNote, loadActiveNote
       <textarea
         id="body"
         placeholder="Write your note here..."
-        value={activeNote.body}
+        value={activeNote.content}
         onChange={(e) => {
-          activeNote.body = e.target.value
-          onEditField("body", e.target.value)}}
+          activeNote.content = e.target.value
+          onEditField("content", e.target.value)}}
       />
       </div> 
       }

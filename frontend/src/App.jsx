@@ -15,42 +15,49 @@ function App() {
   const [clickedNote, setClickedNote] = useState(false)
   const [user, setUser] = useState({ newUser: true });
 
+  var token = '3d23efb8065e433b4df4341f10d39cf6'
   useEffect(() => {
-    axios.get('https://retoolapi.dev/EGJCqt/data').then((res) => {
-      setNotes(res.data)
-      setLoading(false)}
-  )}, []);
+    axios.get('http://192.168.1.239:8080/notes/', { headers: {"Authorization" : `Token ${token}`}})
+      .then((res) => {
+        setNotes(res.data)
+        setLoading(false)}
+      )
+    }, []);
 
   const onAddNote = () => {
-    // const newNote = {
-    //   id: uuid(),
-    //   title: "Untitled Note",
-    //   body: "",
-    // };
-    // setNotes([newNote, ...notes]);
-    // setActiveNote(newNote.id);
-  };
-
-  const onDeleteNote = (noteId) => {
-    axios.delete(`https://retoolapi.dev/EGJCqt/data/${noteId}`)
-    .then((res) => {
-      console.log(res.data)
-      setNotes(notes.filter(({ id }) => id !== noteId));
-      setClickedNote(false)
+    const newNote = {
+      title: "Untitled Note",
+      content: ""
+    }
+    axios.post('http://192.168.1.239:8080/notes/new',newNote,{ headers: {"Authorization" : `Token ${token}`}})
+      .then((res) =>{
+        setNotes([res.data, ...notes]);
+        setActiveNote(res.data.id);
+        setClickedNoteActive(res.data.id)
     })
   };
 
-  const saveNote = (noteId, title, body) => {
-    axios.patch(`https://retoolapi.dev/EGJCqt/data/${noteId}`, {title: title, body: body })
-    .then((res) => {
-      console.log(res.data)
+  const onDeleteNote = (noteId) => {
+    axios.delete(`http://192.168.1.239:8080/notes/${noteId}`, { headers: {"Authorization" : `Token ${token}`} })
+      .then((res) => {
+        console.log(res.data)
+        setNotes(notes.filter(({ id }) => id !== noteId));
+        setClickedNote(false)
+    })
+  };
+
+  const saveNote = (noteId, title, content) => {
+    const body = {title: title, content: content };
+    axios.put(`http://192.168.1.239:8080/notes/${noteId}`, body, { headers: {"Authorization" : `Token ${token}`}})
+      .then((res) => {
+        console.log(res.data)
     })
   };
 
   const setClickedNoteActive = (id) => {
     setLoadActiveNote(false)
     setActiveNote(id)
-    axios.get(`https://retoolapi.dev/EGJCqt/data/${id}`)
+    axios.get(`http://192.168.1.239:8080/notes/${id}`, { headers: {"Authorization" : `Token ${token}`}})
       .then((res) => {
         try{
           setClickedNote(res.data)
@@ -82,7 +89,6 @@ function App() {
   const changeStatus =() =>{
     setLoggedIn(true)
   }
-  
   
   if (!loggedIn)
     return (
